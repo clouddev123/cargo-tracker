@@ -59,26 +59,30 @@ export async function queryByBoxNumber(boxNumber: string): Promise<TrackResult> 
     ),
   ]);
 
-  const shippingList =
-    shippingRes.status === 'fulfilled' && shippingRes.value.data?.returnCode === '00200'
-      ? (shippingRes.value.data.data.list || [])
-      : [];
-  const receivingList =
-    receivingRes.status === 'fulfilled' && receivingRes.value.data?.returnCode === '00200'
-      ? (receivingRes.value.data.data.list || [])
-      : [];
+  const shippingOk = shippingRes.status === 'fulfilled' && shippingRes.value.data?.returnCode === '00200';
+  const receivingOk = receivingRes.status === 'fulfilled' && receivingRes.value.data?.returnCode === '00200';
+
+  const shippingList = shippingOk ? (shippingRes.value.data.data.list || []) : [];
+  const receivingList = receivingOk ? (receivingRes.value.data.data.list || []) : [];
 
   const selected = shippingList[0] || receivingList[0] || null;
 
-  // Store query history — always record both types
+  function settleError(r: PromiseSettledResult<unknown>): string | null {
+    if (r.status === 'rejected') {
+      const reason: unknown = r.reason;
+      return reason instanceof Error ? reason.message : 'Request failed';
+    }
+    return null;
+  }
+
   const db = getDb();
   const elapsed = Date.now() - t0;
   const insertStmt = db.prepare(`
-    INSERT INTO search_queries (box_number, type, result_data, is_success, response_time_ms)
-    VALUES (?, ?, ?, 1, ?)
+    INSERT INTO search_queries (box_number, type, result_data, is_success, error_message, response_time_ms)
+    VALUES (?, ?, ?, ?, ?, ?)
   `);
-  insertStmt.run(boxNumber, '1', JSON.stringify(shippingList), elapsed);
-  insertStmt.run(boxNumber, '2', JSON.stringify(receivingList), elapsed);
+  insertStmt.run(boxNumber, '1', JSON.stringify(shippingList), shippingOk ? 1 : 0, settleError(shippingRes), elapsed);
+  insertStmt.run(boxNumber, '2', JSON.stringify(receivingList), receivingOk ? 1 : 0, settleError(receivingRes), elapsed);
 
   return {
     shipping: shippingList,
