@@ -22,6 +22,11 @@ export function createApp() {
 
   app.use('/api', apiRouter);
 
+  // Return 404 JSON for unmatched /api/* routes (before SPA catch-all)
+  app.use('/api', (_req, res) => {
+    res.status(404).json({ error: 'Not found' });
+  });
+
   if (process.env.NODE_ENV === 'production') {
     app.get('/{*splat}', (_req, res) => {
       res.sendFile(path.join(__dirname, '../../dist/index.html'));
