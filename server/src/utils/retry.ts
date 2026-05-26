@@ -13,10 +13,11 @@ export async function retry<T>(
   for (let i = 0; i < attempts; i++) {
     try {
       return await fn();
-    } catch (err: any) {
+    } catch (err: unknown) {
       lastError = err;
-      const status = err?.response?.status;
-      if (status && status < 500 && status !== 429) {
+      const response = (err as { response?: { status?: number } }).response;
+      const status = response?.status;
+      if (status !== undefined && status < 500 && status !== 429) {
         throw err;
       }
       if (i < attempts - 1) {

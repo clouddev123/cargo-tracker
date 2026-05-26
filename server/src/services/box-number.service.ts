@@ -92,7 +92,9 @@ export async function refreshBoxNumber(id: number): Promise<TrackedBoxNumber | n
       shipping?.ztgjjc || receiving?.ztgjjc || null,
       id,
     );
-  } catch {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    console.error(`[BoxNumber] Refresh failed for ${row.box_number}: ${message}`);
     db.prepare(
       `UPDATE tracked_box_numbers SET last_queried_at = datetime('now'), updated_at = datetime('now') WHERE id = ?`,
     ).run(id);

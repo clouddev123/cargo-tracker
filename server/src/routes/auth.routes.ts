@@ -40,8 +40,9 @@ authRouter.post('/credentials', (req, res) => {
     const result = parseCookie(parsed.data.cookie);
     accessToken = result.accessToken;
     userdoRaw = result.userdo;
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Cookie parse failed';
+    res.status(400).json({ error: message });
     return;
   }
 
