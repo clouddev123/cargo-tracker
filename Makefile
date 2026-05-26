@@ -84,6 +84,7 @@ dev: ## 启动前后端开发服务器（并行）
 	$(NPM) run dev
 
 dev-server: ## 仅启动后端开发服务器（Express + tsx watch → :3001）
+	@mkdir -p server/data
 	$(NPX) tsx watch server/src/index.ts
 
 dev-client: ## 仅启动前端开发服务器（Vite HMR → :5173）
@@ -106,9 +107,11 @@ build-client: ## 构建前端 Vite → dist/
 # ═══════════════════════════════════════════════════
 
 start: build ## 构建并启动生产模式（:3001 托管前端静态文件）
+	@mkdir -p server/data
 	NODE_ENV=production node server/dist/index.js
 
 start-server: build-server ## 启动生产后端（需要先 build-server）
+	@mkdir -p server/data
 	NODE_ENV=production node server/dist/index.js
 
 stop: stop-server stop-client ## 停止所有服务
