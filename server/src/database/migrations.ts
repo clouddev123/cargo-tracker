@@ -36,6 +36,9 @@ export function runMigrations(db: Database.Database): void {
       events         TEXT,
       transit_stops  TEXT,
       full_response  TEXT,
+      gjzt           TEXT,
+      estimated_arrival TEXT,
+      estimated_distance REAL,
       cached_at      TEXT    DEFAULT (datetime('now')),
       expires_at     TEXT
     );

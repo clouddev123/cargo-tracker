@@ -42,6 +42,8 @@ export async function queryByBoxNumber(boxNumber: string): Promise<TrackResult> 
     pageSize: 20,
   };
 
+  const t0 = Date.now();
+
   const [shippingRes, receivingRes] = await Promise.allSettled([
     retry(() =>
       client.post<CargoTrackListResponse>('/api/scjh/track/queryCargoTrackWayBill', {
@@ -68,22 +70,15 @@ export async function queryByBoxNumber(boxNumber: string): Promise<TrackResult> 
 
   const selected = shippingList[0] || receivingList[0] || null;
 
-  // Store query history
+  // Store query history — always record both types
   const db = getDb();
-  const t0 = Date.now();
+  const elapsed = Date.now() - t0;
   const insertStmt = db.prepare(`
     INSERT INTO search_queries (box_number, type, result_data, is_success, response_time_ms)
     VALUES (?, ?, ?, 1, ?)
   `);
-  if (shippingList.length > 0) {
-    insertStmt.run(boxNumber, '1', JSON.stringify(shippingList), Date.now() - t0);
-  }
-  if (receivingList.length > 0) {
-    insertStmt.run(boxNumber, '2', JSON.stringify(receivingList), Date.now() - t0);
-  }
-  if (shippingList.length === 0 && receivingList.length === 0) {
-    insertStmt.run(boxNumber, '1', null, Date.now() - t0);
-  }
+  insertStmt.run(boxNumber, '1', JSON.stringify(shippingList), elapsed);
+  insertStmt.run(boxNumber, '2', JSON.stringify(receivingList), elapsed);
 
   return {
     shipping: shippingList,

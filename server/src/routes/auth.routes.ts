@@ -56,8 +56,8 @@ authRouter.post('/credentials', (req, res) => {
   const creds = saveCredentials(accessToken, userdoJson);
   res.json({
     success: true,
-    username: decodeURIComponent(creds.username),
-    unitname: decodeURIComponent(creds.unitname),
+    username: creds.username,
+    unitname: creds.unitname,
   });
 });
 

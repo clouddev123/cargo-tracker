@@ -32,14 +32,12 @@ export function saveCredentials(accessToken: string, userdo: UserdoPayload): Aut
     INSERT INTO auth_credentials (access_token, userid, username, unitid, unitname, bureauid, bureaudm, usertype)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `);
-  const username = encodeURIComponent(userdo.userName);
-  const unitname = encodeURIComponent(userdo.unitName);
   const result = stmt.run(
     accessToken,
     userdo.userId,
-    username,
+    userdo.userName,
     userdo.unitId,
-    unitname,
+    userdo.unitName,
     userdo.bureauId,
     userdo.bureauDm,
     userdo.userType,
@@ -48,9 +46,9 @@ export function saveCredentials(accessToken: string, userdo: UserdoPayload): Aut
     id: Number(result.lastInsertRowid),
     access_token: accessToken,
     userid: userdo.userId,
-    username,
+    username: userdo.userName,
     unitid: userdo.unitId,
-    unitname,
+    unitname: userdo.unitName,
     bureauid: userdo.bureauId,
     bureaudm: userdo.bureauDm,
     usertype: userdo.userType,
@@ -69,7 +67,7 @@ export function getAuthStatus(): { hasCredentials: boolean; username?: string; u
   if (!creds) return { hasCredentials: false };
   return {
     hasCredentials: true,
-    username: decodeURIComponent(creds.username),
-    unitname: decodeURIComponent(creds.unitname),
+    username: creds.username,
+    unitname: creds.unitname,
   };
 }
