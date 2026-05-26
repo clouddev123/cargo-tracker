@@ -67,6 +67,11 @@ help: ## 显示所有可用命令
 	@echo "  Maintenance:"
 	@echo "    make install       安装所有依赖"
 	@echo "    make status        查看服务运行状态"
+	@echo ""
+	@echo "  Auth:"
+	@echo "    make auth          通过 bb-browser 提取浏览器 Cookie 并保存"
+	@echo "    make auth-status   查看当前认证状态"
+	@echo ""
 	@echo "    make clean         删除 node_modules + dist"
 	@echo "    make clean-dist    仅删除构建产物"
 	@echo "    make clean-db      删除数据库文件"
@@ -230,3 +235,26 @@ check: typecheck build ## 完整质量门：类型检查 + 构建
 # ═══════════════════════════════════════════════════
 
 all: install build ## 安装依赖 + 构建
+
+# ═══════════════════════════════════════════════════
+#  Auth
+# ═══════════════════════════════════════════════════
+
+auth: ## 通过 bb-browser 提取浏览器 Cookie 并保存到本地服务
+	@echo ""
+	@echo "  🔐 95306 认证凭证配置"
+	@echo "  ───────────────────────────────"
+	@echo ""
+	@echo "  1. 确保 Chrome 已打开并登录 https://ec.95306.cn"
+	@echo "  2. 在 95306 页面执行:"
+	@echo ""
+	@echo "     bb-browser site 95306/auth"
+	@echo ""
+	@echo "  或者直接运行（需先 cd 到项目目录）:"
+	@echo ""
+	@echo "     bb-browser site 95306/auth --server http://localhost:3001"
+	@echo ""
+
+auth-status: ## 查看当前认证状态
+	@curl -s http://localhost:3001/api/auth/status | python3 -m json.tool 2>/dev/null || \
+	curl -s http://localhost:3001/api/auth/status
