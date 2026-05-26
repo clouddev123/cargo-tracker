@@ -11,6 +11,9 @@ SERVER_PORT := 3001
 CLIENT_PORT := 5173
 DB_PATH     := server/data/cargo-tracker.db
 
+SERVER_URL  := http://localhost:$(SERVER_PORT)
+CLIENT_URL  := http://localhost:$(CLIENT_PORT)
+
 # ─── Phony targets ────────────────────────────────
 .PHONY: help \
         install \
@@ -81,13 +84,24 @@ install: ## 安装所有依赖
 # ═══════════════════════════════════════════════════
 
 dev: ## 启动前后端开发服务器（并行）
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo "  🔧 Dev Mode"
+	@echo "  Backend  → $(SERVER_URL)  (Express + tsx watch)"
+	@echo "  Frontend → $(CLIENT_URL)  (Vite HMR)"
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	$(NPM) run dev
 
 dev-server: ## 仅启动后端开发服务器（Express + tsx watch → :3001）
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo "  🔧 Backend Dev → $(SERVER_URL)  (tsx watch)"
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@mkdir -p server/data
 	$(NPX) tsx watch server/src/index.ts
 
 dev-client: ## 仅启动前端开发服务器（Vite HMR → :5173）
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo "  🔧 Frontend Dev → $(CLIENT_URL)  (Vite HMR)"
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	$(NPX) vite
 
 # ═══════════════════════════════════════════════════
@@ -107,10 +121,17 @@ build-client: ## 构建前端 Vite → dist/
 # ═══════════════════════════════════════════════════
 
 start: build ## 构建并启动生产模式（:3001 托管前端静态文件）
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo "  🚀 Production → $(SERVER_URL)"
+	@echo "  (static files served by Express, no Vite needed)"
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@mkdir -p server/data
 	NODE_ENV=production node server/dist/index.js
 
 start-server: build-server ## 启动生产后端（需要先 build-server）
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo "  🚀 Backend Production → $(SERVER_URL)"
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@mkdir -p server/data
 	NODE_ENV=production node server/dist/index.js
 
@@ -122,9 +143,17 @@ stop-server: ## 停止后端进程
 stop-client: ## 停止前端进程
 	@lsof -ti:$(CLIENT_PORT) | xargs -r kill 2>/dev/null; true
 
-restart: stop start ## 停止 → 构建 → 生产启动
+restart: stop ## 停止 → 构建 → 生产启动
+	@echo ""
+	@echo "  ⏳ Restarting production mode..."
+	@echo ""
+	@$(MAKE) start
 
-restart-dev: stop dev ## 停止 → 开发模式启动
+restart-dev: stop ## 停止 → 开发模式启动
+	@echo ""
+	@echo "  ⏳ Restarting dev mode..."
+	@echo ""
+	@$(MAKE) dev
 
 # ═══════════════════════════════════════════════════
 #  Database
@@ -142,12 +171,26 @@ db-reset: ## 删除数据库文件并重建
 # ═══════════════════════════════════════════════════
 
 status: ## 查看服务运行状态
+	@echo ""
 	@printf "  Backend  :%-5s → " "$(SERVER_PORT)"
-	@lsof -ti:$(SERVER_PORT) >/dev/null 2>&1 && echo "RUNNING" || echo "stopped"
+	@if lsof -ti:$(SERVER_PORT) >/dev/null 2>&1; then \
+		echo "🟢 RUNNING  $(SERVER_URL)"; \
+	else \
+		echo "🔴 stopped"; \
+	fi
 	@printf "  Frontend :%-5s → " "$(CLIENT_PORT)"
-	@lsof -ti:$(CLIENT_PORT) >/dev/null 2>&1 && echo "RUNNING" || echo "stopped"
+	@if lsof -ti:$(CLIENT_PORT) >/dev/null 2>&1; then \
+		echo "🟢 RUNNING  $(CLIENT_URL)"; \
+	else \
+		echo "🔴 stopped"; \
+	fi
 	@printf "  Database         → "
-	@[ -f $(DB_PATH) ] && echo "$(DB_PATH)" || echo "not found"
+	@if [ -f $(DB_PATH) ]; then \
+		echo "🟢 $(DB_PATH)"; \
+	else \
+		echo "🔴 not found"; \
+	fi
+	@echo ""
 
 # ═══════════════════════════════════════════════════
 #  Clean
