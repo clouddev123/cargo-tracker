@@ -28,8 +28,8 @@ export function BoxNumberManagePage() {
     try {
       const list = await api.boxNumbers.list();
       setItems(list);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load');
     } finally {
       setLoading(false);
     }
@@ -46,8 +46,8 @@ export function BoxNumberManagePage() {
       setBoxNumber('');
       setLabel('');
       await load();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to add');
     } finally {
       setAdding(false);
     }
@@ -77,8 +77,8 @@ export function BoxNumberManagePage() {
       });
       setItems((prev) => prev.map((item) => (item.id === editingId ? updated : item)));
       cancelEdit();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to save');
     } finally {
       setSaving(false);
     }
@@ -110,8 +110,8 @@ export function BoxNumberManagePage() {
     try {
       const result = await api.boxNumbers.refreshAll();
       setItems(result.list);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to refresh');
     } finally {
       setRefreshingAll(false);
     }

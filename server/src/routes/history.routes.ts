@@ -42,6 +42,10 @@ historyRouter.delete('/history/:id', (req, res) => {
     res.status(400).json({ error: 'Invalid id' });
     return;
   }
-  db.prepare('DELETE FROM search_queries WHERE id = ?').run(id);
+  const result = db.prepare('DELETE FROM search_queries WHERE id = ?').run(id);
+  if (result.changes === 0) {
+    res.status(404).json({ error: 'Not found' });
+    return;
+  }
   res.json({ success: true });
 });

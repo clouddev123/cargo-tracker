@@ -13,8 +13,9 @@ export function useTrajectory(ydid: string) {
     try {
       const result = await api.cargo.trajectory(ydid);
       setData(result);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch trajectory';
+      setError(message);
     } finally {
       setLoading(false);
     }

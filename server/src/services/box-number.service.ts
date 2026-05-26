@@ -105,10 +105,8 @@ export async function refreshBoxNumber(id: number): Promise<TrackedBoxNumber | n
 
 export async function refreshAll(): Promise<TrackedBoxNumber[]> {
   const all = listAll();
-  const results: TrackedBoxNumber[] = [];
-  for (const item of all) {
-    const updated = await refreshBoxNumber(item.id);
-    if (updated) results.push(updated);
-  }
-  return results;
+  const results = await Promise.all(
+    all.map((item) => refreshBoxNumber(item.id)),
+  );
+  return results.filter((r): r is TrackedBoxNumber => r !== null);
 }

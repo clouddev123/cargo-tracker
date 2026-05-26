@@ -27,23 +27,28 @@ export function getActiveCredentials(): AuthCredentials | null {
 
 export function saveCredentials(accessToken: string, userdo: UserdoPayload): AuthCredentials {
   const db = getDb();
-  db.prepare('UPDATE auth_credentials SET is_active = 0 WHERE is_active = 1').run();
-  const stmt = db.prepare(`
-    INSERT INTO auth_credentials (access_token, userid, username, unitid, unitname, bureauid, bureaudm, usertype)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-  const result = stmt.run(
-    accessToken,
-    userdo.userId,
-    userdo.userName,
-    userdo.unitId,
-    userdo.unitName,
-    userdo.bureauId,
-    userdo.bureauDm,
-    userdo.userType,
-  );
+  const runInsert = db.transaction(() => {
+    db.prepare('UPDATE auth_credentials SET is_active = 0 WHERE is_active = 1').run();
+    const stmt = db.prepare(`
+      INSERT INTO auth_credentials (access_token, userid, username, unitid, unitname, bureauid, bureaudm, usertype)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const result = stmt.run(
+      accessToken,
+      userdo.userId,
+      userdo.userName,
+      userdo.unitId,
+      userdo.unitName,
+      userdo.bureauId,
+      userdo.bureauDm,
+      userdo.userType,
+    );
+    return Number(result.lastInsertRowid);
+  });
+
+  const newId = runInsert();
   cached = {
-    id: Number(result.lastInsertRowid),
+    id: newId,
     access_token: accessToken,
     userid: userdo.userId,
     username: userdo.userName,

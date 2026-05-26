@@ -46,8 +46,9 @@ export const useSearchStore = create<SearchState>((set, get) => ({
         loading: false,
       });
       return result;
-    } catch (err: any) {
-      set({ error: err.message, loading: false });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Track failed';
+      set({ error: message, loading: false });
       return null;
     }
   },

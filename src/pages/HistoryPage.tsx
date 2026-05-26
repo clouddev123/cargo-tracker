@@ -14,15 +14,22 @@ export function HistoryPage() {
     try {
       const result = await api.history.list({ page: 1, pageSize: 50 });
       setData(result);
-    } catch { /* ignore */ }
-    finally { setLoading(false); }
+    } catch (err: unknown) {
+      console.error('Failed to load history:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
 
   const handleDelete = async (id: number) => {
-    await api.history.delete(id);
-    load();
+    try {
+      await api.history.delete(id);
+      load();
+    } catch (err: unknown) {
+      console.error('Failed to delete history entry:', err);
+    }
   };
 
   if (loading) return <LoadingSpinner text="加载历史记录..." />;

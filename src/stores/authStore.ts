@@ -38,8 +38,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         error: null,
       });
       return true;
-    } catch (err: any) {
-      set({ error: err.message });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to save credentials';
+      set({ error: message });
       return false;
     }
   },
