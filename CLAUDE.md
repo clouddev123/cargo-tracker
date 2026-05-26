@@ -9,11 +9,48 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 常用命令
 
 ```bash
+# Makefile (recommended)
+make dev             # 启动前后端开发服务器（显示 URL 横幅）
+make dev-server      # 仅后端（Express + tsx watch → :3001）
+make dev-client      # 仅前端（Vite HMR → :5173）
+make build           # 构建前后端
+make start           # 生产模式（构建 + 启动 → :3001）
+make stop            # 停止所有服务
+make restart         # 停止 → 构建 → 生产启动
+make status          # 查看运行状态
+make typecheck       # 前后端 TypeScript 类型检查
+make check           # 完整质量门：typecheck + build
+make db-init         # 初始化数据库
+make db-reset        # 删除并重建数据库
+
+# npm scripts (fallback)
 npm run dev          # 并行启动：Express API (3001端口) + Vite dev server (5173端口)
 npm run build        # 构建 server + client 到 dist/
 npm run start        # 生产模式启动（需要先 build）
 npm run db:init      # 初始化/运行数据库迁移
 ```
+
+## 可用的 Slash Commands
+
+- `/dev` — `make dev` 启动开发服务器
+- `/build` — `make build` 构建项目
+- `/type-check` — `make typecheck` 类型检查
+- `/check` — `make check` 完整质量门
+- `/status` — `make status` 查看服务状态
+- `/commit` — 验证 + 提交工作流
+
+## 可用的专用 Agents
+
+- `@security-reviewer` — 安全代码审查（SQL注入、凭证泄露、输入验证）
+- `@test-writer` — 编写前后端测试（Vitest + Supertest + React Testing Library）
+- `@refactor-reviewer` — 重构正确性审查
+
+## 自动化 Hooks
+
+- TypeScript 文件写入后自动运行 `tsc --noEmit`
+- Git push --force 和 rm -rf 被自动拦截
+- 会话启动时记录分支和变更状态
+- 禁止读取 `.env` 和凭证文件
 
 ## 技术栈
 

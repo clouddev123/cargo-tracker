@@ -1,0 +1,84 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(make *)",
+      "Bash(git *)",
+      "Bash(curl *)",
+      "Bash(node *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(mkdir *)",
+      "Bash(cd *)",
+      "Bash(echo *)",
+      "Read",
+      "Edit",
+      "Write",
+      "WebSearch",
+      "WebFetch"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force *)",
+      "Bash(sudo *)",
+      "Read(.env)",
+      "Read(*credentials*)",
+      "Read(*secret*)",
+      "Read(*token*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write(*.ts)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && npx tsc -p tsconfig.server.json --noEmit 2>&1 | head -20"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(*.tsx)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && npx tsc --noEmit 2>&1 | head -20"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && git diff --stat 2>/dev/null | tail -1"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE 'rm -rf|git push.*--force|sudo|:(){ :|:& };:'; then echo 'BLOCKED: dangerous command' && exit 2; fi"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && echo \"[session-start] $(date) | branch: $(git branch --show-current 2>/dev/null || echo 'N/A') | status: $(git status --porcelain 2>/dev/null | wc -l) files changed\""
+          }
+        ]
+      }
+    ]
+  }
+}
