@@ -4,13 +4,12 @@ NPM := npm
 NPX := npx
 RM  := rm -rf
 MKDIR := mkdir -p
-KILL := lsof -ti:3001 | xargs -r kill
+KILL := npx kill-port 3001
 
 # Windows detection
 ifeq ($(OS),Windows_NT)
   RM   := cmd /c rmdir /s /q 2>nul || true
   MKDIR := cmd /c mkdir 2>nul || true
-  KILL := cmd /c "for /f \"tokens=5\" %a in ('netstat -ano ^| findstr :3001 ^| findstr LISTENING') do taskkill /PID %a /F >nul 2>nul"
 endif
 
 # ---------- targets ----------
